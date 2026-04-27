@@ -3,19 +3,90 @@
 <head>
   <meta charset="utf-8">
   <title>WebGL Eagle</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <canvas id="webgl" width="600" height="600"></canvas>
+  <h2>Hierarchical Eagle Model</h2>
+  <canvas id="webgl" width="700" height="500"></canvas>
 
-  <!-- Sliders -->
-  <input type="range" min="0" max="360" id="angleSlider">
+  <div class="controls">
+    <div class="row">
+      <label>Global Y Rotation
+        <input type="range" min="-180" max="180" value="0" id="globalYSlider">
+      </label>
+      <label>Global X Rotation
+        <input type="range" min="-60" max="60" value="15" id="globalXSlider">
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Neck
+        <input type="range" min="-45" max="45" value="0" id="neckSlider">
+      </label>
+      <label>Head
+        <input type="range" min="-40" max="40" value="0" id="headSlider">
+      </label>
+      <label>Beak
+        <input type="range" min="-30" max="20" value="0" id="beakSlider">
+      </label>
+      <label>Tail
+        <input type="range" min="-35" max="35" value="0" id="tailSlider">
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Left Shoulder
+        <input type="range" min="-90" max="90" value="10" id="leftShoulderSlider">
+      </label>
+      <label>Left Elbow
+        <input type="range" min="-80" max="80" value="-10" id="leftElbowSlider">
+      </label>
+      <label>Left Wrist
+        <input type="range" min="-60" max="60" value="10" id="leftWristSlider">
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Right Shoulder
+        <input type="range" min="-90" max="90" value="-10" id="rightShoulderSlider">
+      </label>
+      <label>Right Elbow
+        <input type="range" min="-80" max="80" value="10" id="rightElbowSlider">
+      </label>
+      <label>Right Wrist
+        <input type="range" min="-60" max="60" value="-10" id="rightWristSlider">
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Left Hip
+        <input type="range" min="-45" max="45" value="0" id="leftHipSlider">
+      </label>
+      <label>Left Knee
+        <input type="range" min="-45" max="45" value="0" id="leftKneeSlider">
+      </label>
+      <label>Right Hip
+        <input type="range" min="-45" max="45" value="0" id="rightHipSlider">
+      </label>
+      <label>Right Knee
+        <input type="range" min="-45" max="45" value="0" id="rightKneeSlider">
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="animOnBtn">Animation ON</button>
+      <button id="animOffBtn">Animation OFF</button>
+      <span>Shift + Click canvas for poke animation</span>
+      <span>Drag mouse on canvas to rotate</span>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="lib/webgl-utils.js"></script>
   <script src="lib/webgl-debug.js"></script>
   <script src="lib/cuon-utils.js"></script>
-  <script src="lib/cuon-matrix.js"></script>
+  <script src="lib/cuon-matrix-cse160.js"></script>
 
   <script src="shaders.js"></script>
   <script src="main.js"></script>
