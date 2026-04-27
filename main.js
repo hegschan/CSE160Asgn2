@@ -241,13 +241,14 @@ function updateAnimation(t, dt) {
 
 function renderScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.viewport(0, 0, canvas.width, canvas.height);
 
   const proj = new Matrix4();
   proj.setPerspective(60, canvas.width / canvas.height, 0.1, 100);
   gl.uniformMatrix4fv(u_ProjectionMatrix, false, proj.elements);
 
   const view = new Matrix4();
-  view.setLookAt(0, 2.5, 8, 0, 1.3, 0, 0, 1, 0);
+  view.setLookAt(0, 1.6, 7.2, 0, 0.7, 0, 0, 1, 0);
   gl.uniformMatrix4fv(u_ViewMatrix, false, view.elements);
 
   const globalRot = new Matrix4();
@@ -255,22 +256,32 @@ function renderScene() {
   globalRot.rotate(g_global.y + g_global.mouseY, 0, 1, 0);
   gl.uniformMatrix4fv(u_GlobalRotation, false, globalRot.elements);
 
-  let body = new Matrix4();
+  const eagleRoot = new Matrix4();
+  eagleRoot.translate(-0.1, -0.75, -0.2);
+  eagleRoot.scale(0.95, 0.95, 0.95);
+
+  // Reference marker: confirms model-space drawing is visible.
+  const reference = new Matrix4(eagleRoot);
+  reference.translate(-0.05, -0.1, -0.05);
+  reference.scale(0.12, 0.12, 0.12);
+  drawCube(reference, [1.0, 0.15, 0.15, 1.0]);
+
+  let body = new Matrix4(eagleRoot);
   body.translate(-1.2, 0.6, -0.4);
   body.scale(2.4, 1.2, 1.4);
   drawCube(body, [0.38, 0.25, 0.13, 1.0]); // torso
 
-  let chest = new Matrix4();
+  let chest = new Matrix4(eagleRoot);
   chest.translate(-0.8, 0.35, -0.25);
   chest.scale(1.6, 1.0, 1.1);
   drawCube(chest, [0.55, 0.35, 0.20, 1.0]); // chest
 
-  let pelvis = new Matrix4();
+  let pelvis = new Matrix4(eagleRoot);
   pelvis.translate(-0.7, 0.0, -0.3);
   pelvis.scale(1.4, 0.6, 1.2);
   drawCube(pelvis, [0.30, 0.20, 0.10, 1.0]); // back body
 
-  let neckBase = new Matrix4();
+  let neckBase = new Matrix4(eagleRoot);
   neckBase.translate(-0.25, 1.35, 0.08);
   neckBase.rotate(g_joint.neck, 0, 0, 1);
   pushMatrix(neckBase);
@@ -292,21 +303,21 @@ function renderScene() {
   beak.scale(0.5, 0.35, 0.35);
   drawPyramid(beak, [0.95, 0.75, 0.15, 1.0]); // non-cube primitive
 
-  let tailRoot = new Matrix4();
+  let tailRoot = new Matrix4(eagleRoot);
   tailRoot.translate(-1.25, 0.95, 0.1);
   tailRoot.rotate(g_joint.tail, 0, 0, 1);
   let tail = new Matrix4(tailRoot);
   tail.scale(0.8, 0.25, 0.6);
   drawCube(tail, [0.26, 0.16, 0.08, 1.0]); // tail
 
-  drawWing(-0.1, 1.0, -0.35, true);
-  drawWing(-0.1, 1.0, 1.05, false);
-  drawLeg(0.2, 0.03, -0.1, true);
-  drawLeg(0.2, 0.03, 0.7, false);
+  drawWing(eagleRoot, -0.1, 1.0, -0.35, true);
+  drawWing(eagleRoot, -0.1, 1.0, 1.05, false);
+  drawLeg(eagleRoot, 0.2, 0.03, -0.1, true);
+  drawLeg(eagleRoot, 0.2, 0.03, 0.7, false);
 }
 
-function drawWing(x, y, z, left) {
-  const shoulder = new Matrix4();
+function drawWing(root, x, y, z, left) {
+  const shoulder = new Matrix4(root);
   shoulder.translate(x, y, z);
   shoulder.rotate(left ? g_joint.leftShoulder : g_joint.rightShoulder, 0, 0, 1);
   pushMatrix(shoulder);
@@ -332,8 +343,8 @@ function drawWing(x, y, z, left) {
   drawCube(tip, [0.17, 0.11, 0.07, 1.0]); // wing tip
 }
 
-function drawLeg(x, y, z, left) {
-  const hip = new Matrix4();
+function drawLeg(root, x, y, z, left) {
+  const hip = new Matrix4(root);
   hip.translate(x, y, z);
   hip.rotate(left ? g_joint.leftHip : g_joint.rightHip, 0, 0, 1);
   pushMatrix(hip);
