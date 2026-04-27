@@ -42,32 +42,83 @@ let g_pokeStart = 0;
 let g_startTime = performance.now();
 let g_lastFrame = g_startTime;
 
+function reportStatus(message, isError) {
+  let panel = document.getElementById("debugPanel");
+  if (!panel) {
+    panel = document.createElement("pre");
+    panel.id = "debugPanel";
+    panel.style.marginTop = "8px";
+    panel.style.padding = "8px";
+    panel.style.border = "1px solid #355076";
+    panel.style.background = "#f8fcff";
+    panel.style.whiteSpace = "pre-wrap";
+    document.body.appendChild(panel);
+  }
+  panel.textContent = message;
+  panel.style.color = isError ? "#a00000" : "#0f3c66";
+}
+
+function compileShader(glCtx, type, source) {
+  const shader = glCtx.createShader(type);
+  glCtx.shaderSource(shader, source);
+  glCtx.compileShader(shader);
+  if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
+    const log = glCtx.getShaderInfoLog(shader);
+    glCtx.deleteShader(shader);
+    throw new Error("Shader compile error:\n" + log);
+  }
+  return shader;
+}
+
+function createProgram(glCtx, vsrc, fsrc) {
+  const v = compileShader(glCtx, glCtx.VERTEX_SHADER, vsrc);
+  const f = compileShader(glCtx, glCtx.FRAGMENT_SHADER, fsrc);
+  const program = glCtx.createProgram();
+  glCtx.attachShader(program, v);
+  glCtx.attachShader(program, f);
+  glCtx.linkProgram(program);
+  if (!glCtx.getProgramParameter(program, glCtx.LINK_STATUS)) {
+    const log = glCtx.getProgramInfoLog(program);
+    throw new Error("Program link error:\n" + log);
+  }
+  glCtx.useProgram(program);
+  glCtx.program = program;
+  return program;
+}
+
 function main() {
-  canvas = document.getElementById("webgl");
-  gl = canvas.getContext("webgl");
-  if (!gl) {
-    console.log("Failed to get WebGL context");
-    return;
+  try {
+    canvas = document.getElementById("webgl");
+    gl = canvas.getContext("webgl");
+    if (!gl) {
+      reportStatus("Failed to get WebGL context.", true);
+      return;
+    }
+
+    createProgram(gl, VSHADER_SOURCE, FSHADER_SOURCE);
+
+    a_Position = gl.getAttribLocation(gl.program, "a_Position");
+    u_ModelMatrix = gl.getUniformLocation(gl.program, "u_ModelMatrix");
+    u_GlobalRotation = gl.getUniformLocation(gl.program, "u_GlobalRotation");
+    u_FragColor = gl.getUniformLocation(gl.program, "u_FragColor");
+
+    if (a_Position < 0 || !u_ModelMatrix || !u_GlobalRotation || !u_FragColor) {
+      reportStatus("Failed to locate one or more shader variables.", true);
+      return;
+    }
+
+    initGeometry();
+    initUI();
+    initMouseControls();
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.clearColor(0.68, 0.84, 0.97, 1.0);
+
+    reportStatus("WebGL initialized. Eagle should be visible and animated.", false);
+    requestAnimationFrame(tick);
+  } catch (err) {
+    reportStatus(String(err), true);
   }
-
-  if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-    console.log("Failed to initialize shaders.");
-    return;
-  }
-
-  a_Position = gl.getAttribLocation(gl.program, "a_Position");
-  u_ModelMatrix = gl.getUniformLocation(gl.program, "u_ModelMatrix");
-  u_GlobalRotation = gl.getUniformLocation(gl.program, "u_GlobalRotation");
-  u_FragColor = gl.getUniformLocation(gl.program, "u_FragColor");
-
-  initGeometry();
-  initUI();
-  initMouseControls();
-
-  gl.enable(gl.DEPTH_TEST);
-  gl.clearColor(0.68, 0.84, 0.97, 1.0);
-
-  requestAnimationFrame(tick);
 }
 
 function initGeometry() {
