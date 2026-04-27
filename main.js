@@ -3,8 +3,6 @@ let gl;
 let a_Position;
 let u_ModelMatrix;
 let u_GlobalRotation;
-let u_ProjectionMatrix;
-let u_ViewMatrix;
 let u_FragColor;
 
 let cubeBuffer;
@@ -60,8 +58,6 @@ function main() {
   a_Position = gl.getAttribLocation(gl.program, "a_Position");
   u_ModelMatrix = gl.getUniformLocation(gl.program, "u_ModelMatrix");
   u_GlobalRotation = gl.getUniformLocation(gl.program, "u_GlobalRotation");
-  u_ProjectionMatrix = gl.getUniformLocation(gl.program, "u_ProjectionMatrix");
-  u_ViewMatrix = gl.getUniformLocation(gl.program, "u_ViewMatrix");
   u_FragColor = gl.getUniformLocation(gl.program, "u_FragColor");
 
   initGeometry();
@@ -243,22 +239,14 @@ function renderScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.viewport(0, 0, canvas.width, canvas.height);
 
-  const proj = new Matrix4();
-  proj.setPerspective(60, canvas.width / canvas.height, 0.1, 100);
-  gl.uniformMatrix4fv(u_ProjectionMatrix, false, proj.elements);
-
-  const view = new Matrix4();
-  view.setLookAt(0, 1.6, 7.2, 0, 0.7, 0, 0, 1, 0);
-  gl.uniformMatrix4fv(u_ViewMatrix, false, view.elements);
-
   const globalRot = new Matrix4();
-  globalRot.rotate(g_global.x + g_global.mouseX, 1, 0, 0);
-  globalRot.rotate(g_global.y + g_global.mouseY, 0, 1, 0);
+  globalRot.rotate((g_global.x + g_global.mouseX) * 0.6, 1, 0, 0);
+  globalRot.rotate((g_global.y + g_global.mouseY) * 0.6, 0, 1, 0);
   gl.uniformMatrix4fv(u_GlobalRotation, false, globalRot.elements);
 
   const eagleRoot = new Matrix4();
-  eagleRoot.translate(-0.1, -0.75, -0.2);
-  eagleRoot.scale(0.95, 0.95, 0.95);
+  eagleRoot.translate(-0.72, -0.66, -0.18);
+  eagleRoot.scale(0.42, 0.42, 0.42);
 
   // Reference marker: confirms model-space drawing is visible.
   const reference = new Matrix4(eagleRoot);
